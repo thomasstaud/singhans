@@ -2,7 +2,12 @@ use anyhow::{Error, Result};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, Sample, SizedSample};
 
-pub fn beep() -> Result<()> {
+pub struct Beep {
+    pub amplitude: f32,
+    pub freq: f32,
+}
+
+pub fn beep(beep: Beep) -> Result<()> {
     let host = cpal::default_host();
     let device = host
         .default_output_device()
@@ -14,14 +19,14 @@ pub fn beep() -> Result<()> {
     println!("Default output config: {config:?}");
 
     match config.sample_format() {
-        cpal::SampleFormat::F32 => Ok(run::<f32>(&device, &config.into())?),
-        cpal::SampleFormat::I16 => Ok(run::<i16>(&device, &config.into())?),
-        cpal::SampleFormat::U16 => Ok(run::<u16>(&device, &config.into())?),
+        cpal::SampleFormat::F32 => Ok(run::<f32>(&device, &config.into(), beep)?),
+        cpal::SampleFormat::I16 => Ok(run::<i16>(&device, &config.into(), beep)?),
+        cpal::SampleFormat::U16 => Ok(run::<u16>(&device, &config.into(), beep)?),
         _ => Err(Error::msg("unsupported sample format")),
     }
 }
 
-pub fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig) -> Result<()>
+pub fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig, beep: Beep) -> Result<()>
 where
     T: SizedSample + FromSample<f32>,
 {
@@ -32,7 +37,7 @@ where
     let mut sample_clock = 0f32;
     let mut next_value = move || {
         sample_clock = (sample_clock + 1.0) % sample_rate;
-        (sample_clock * 440.0 * 2.0 * std::f32::consts::PI / sample_rate).sin()
+        (sample_clock * beep.freq * 2.0 * std::f32::consts::PI / sample_rate).sin() * beep.amplitude
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {err}");

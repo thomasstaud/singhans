@@ -1,6 +1,13 @@
 mod beep;
+mod gui;
 
 fn main() {
-    println!("hans");
-    beep::beep().expect("could not beep!");
+    gui::main().expect("gui error");
+
+    /*
+    beep::beep(beep::Beep{
+        amplitude: 1.0,
+        freq: 200.0,
+    }).expect("could not beep!");
+    */
 }
