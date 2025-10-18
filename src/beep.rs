@@ -2,6 +2,7 @@ use anyhow::{Error, Result};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, Sample, SizedSample};
 
+#[derive(Debug, Copy, Clone)]
 pub struct Beep {
     pub amplitude: f32,
     pub freq: f32,
@@ -12,11 +13,9 @@ pub fn beep(beep: Beep) -> Result<()> {
     let device = host
         .default_output_device()
         .expect("failed to find output device");
-    println!("Output device: {}", device.name()?);
     let config = device
         .default_output_config()
         .expect("failed to find default config");
-    println!("Default output config: {config:?}");
 
     match config.sample_format() {
         cpal::SampleFormat::F32 => Ok(run::<f32>(&device, &config.into(), beep)?),

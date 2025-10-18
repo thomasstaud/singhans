@@ -1,7 +1,7 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 #![allow(rustdoc::missing_crate_level_docs)] // it's an example
 
 use eframe::egui;
+use crate::beep;
 
 pub fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
@@ -9,24 +9,25 @@ pub fn main() -> eframe::Result {
         ..Default::default()
     };
     eframe::run_native(
-        "My egui App",
+        "singhans",
         options,
-        Box::new(|cc| {
+        Box::new(|_cc| {
             Ok(Box::<MyApp>::default())
         }),
     )
 }
 
 struct MyApp {
-    name: String,
-    age: u32,
+    beep: beep::Beep,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            name: "Arthur".to_owned(),
-            age: 42,
+            beep: beep::Beep {
+                amplitude: 1.0,
+                freq: 200.0,
+            }
         }
     }
 }
@@ -34,17 +35,12 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("My egui Application");
-            ui.horizontal(|ui| {
-                let name_label = ui.label("Your name: ");
-                ui.text_edit_singleline(&mut self.name)
-                    .labelled_by(name_label.id);
-            });
-            ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
-            if ui.button("Increment").clicked() {
-                self.age += 1;
+            ui.heading("beep");
+            ui.add(egui::Slider::new(&mut self.beep.amplitude, 0.1..=5.0).text("amplitude"));
+            ui.add(egui::Slider::new(&mut self.beep.freq, 50.0..=2500.0).text("frequency"));
+            if ui.button("beep").clicked() {
+                beep::beep(self.beep).expect("beep failed");
             }
-            ui.label(format!("Hello '{}', age {}", self.name, self.age));
         });
     }
 }
